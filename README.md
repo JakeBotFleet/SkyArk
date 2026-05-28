@@ -91,6 +91,58 @@ Take a look at the Readme files of the scanning modules:
 AzureStealth - [https://github.com/cyberark/SkyArk/blob/master/AzureStealth/README.md](https://github.com/cyberark/SkyArk/blob/master/AzureStealth/README.md)  
 AWStealth - [https://github.com/cyberark/SkyArk/blob/master/AWStealth/README.md](https://github.com/cyberark/SkyArk/blob/master/AWStealth/README.md)
 
+---
+
+# Linux / Python Quick Start
+
+All three AWS modules (`AWStealth`, `AWStrace`, `AWSHostRecon`) have Python 3 ports
+that run on Linux without PowerShell.
+
+## Layout
+
+```
+SkyArk/
+├── AWStealth/awstealth.py      # IAM Shadow-Admin scan
+├── AWStrace/awstrace.py        # CloudTrail download + analysis
+├── AWSHostRecon/awshostrecon.py# Linux host recon for AWS artefacts
+├── requirements.txt            # pip dependencies (boto3)
+└── run.sh                      # dispatcher script
+```
+
+## Install
+
+```bash
+pip install -r requirements.txt
+```
+
+## AWS Credentials
+
+The Python tools use boto3's **standard credential chain** — no `.env` file is loaded.
+Supply credentials by any of the following methods (in priority order):
+
+| Method | How |
+|--------|-----|
+| Environment variables | `export AWS_ACCESS_KEY_ID=AKIA...` `export AWS_SECRET_ACCESS_KEY=...` `export AWS_SESSION_TOKEN=...` (optional) |
+| AWS CLI named profile | `export AWS_PROFILE=myprofile` or pass `--profile myprofile` to any tool |
+| `~/.aws/credentials` | File written by `aws configure` |
+| IAM instance / task role | Automatic on EC2, ECS, Lambda |
+
+To source a `.env` file without leaking its contents:
+
+```bash
+set -a && source /path/to/.env && set +a
+```
+
+## Run via dispatcher
+
+```bash
+./run.sh stealth                         # IAM scan
+./run.sh trace run --bucket BUCKET \
+         --prefix AWSLogs/.../CloudTrail/... --local-path ./logs
+./run.sh recon --quick --output recon.json
+```
+
+
 # Share Your Thoughts And Feedback  
 Asaf Hecht ([@Hechtov](https://twitter.com/Hechtov)) and CyberArk Labs 
   

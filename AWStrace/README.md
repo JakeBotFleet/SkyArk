@@ -61,3 +61,50 @@ Read-Only for the CloudTrail's S3 bucket - to download and analyze the log files
     ]
 }
 ```
+
+---
+
+## Linux / Python Version
+
+`awstrace.py` is a Python 3 port of this module that runs on Linux without PowerShell.
+
+### Install
+
+```bash
+pip install -r requirements.txt   # boto3 only; run from the SkyArk root
+```
+
+Python ≥ 3.9 is required.
+
+### AWS Credentials
+
+`awstrace.py` uses the standard **boto3 credential chain** — no `.env` file is read.
+Supply credentials through any of these methods (in priority order):
+
+| Method | How |
+|--------|-----|
+| Environment variables | `export AWS_ACCESS_KEY_ID=...`  `export AWS_SECRET_ACCESS_KEY=...`  `export AWS_SESSION_TOKEN=...` (optional) |
+| AWS CLI named profile | `export AWS_PROFILE=myprofile` or pass `--profile myprofile` |
+| `~/.aws/credentials` | Standard credentials file written by `aws configure` |
+| IAM instance / task role | Automatically used when running on EC2 / ECS / Lambda |
+
+To load credentials from a `.env` file without printing them:
+
+```bash
+set -a && source /path/to/.env && set +a
+```
+
+### Run
+
+```bash
+# via dispatcher (from SkyArk root)
+./run.sh trace download --bucket my-trail-bkt \
+                        --prefix AWSLogs/123456789012/CloudTrail/us-west-2/2026/05 \
+                        --local-path ./logs
+./run.sh trace analyze  --local-path ./logs
+./run.sh trace run      --bucket my-trail-bkt --prefix ... --local-path ./logs
+
+# directly
+python3 AWStrace/awstrace.py download --bucket my-trail-bkt --prefix ... --local-path ./logs
+python3 AWStrace/awstrace.py analyze  --local-path ./logs
+```
